@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: capcut-vision-mcp
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: PAIRING_TOKEN
+        generateValue: true
+      - key: COMMAND_TIMEOUT_MS
+        value: "45000"
