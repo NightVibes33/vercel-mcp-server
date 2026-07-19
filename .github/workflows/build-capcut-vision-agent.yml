@@ -1,0 +1,91 @@
+name: Build CapCut Vision Agent EXE
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - capcut-vision-mcp
+    paths:
+      - "capcut-vision-mcp/agent/**"
+      - ".github/workflows/build-capcut-vision-agent.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows-exe:
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: capcut-vision-mcp/agent/requirements.txt
+
+      - name: Install build dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r capcut-vision-mcp/agent/requirements.txt
+          pip install pyinstaller==6.14.2
+
+      - name: Validate Python source
+        shell: pwsh
+        run: |
+          python -m py_compile capcut-vision-mcp/agent/agent.py
+          python -m py_compile capcut-vision-mcp/agent/agent_exe.py
+
+      - name: Build standalone executable
+        shell: pwsh
+        run: |
+          pyinstaller `
+            --noconfirm `
+            --clean `
+            --onefile `
+            --windowed `
+            --name CapCutVisionAgent `
+            --paths capcut-vision-mcp/agent `
+            --collect-all mss `
+            --collect-all keyboard `
+            --collect-all pyautogui `
+            --collect-all PIL `
+            --hidden-import win32timezone `
+            capcut-vision-mcp/agent/agent_exe.py
+
+      - name: Assemble release package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force release | Out-Null
+          Copy-Item dist/CapCutVisionAgent.exe release/CapCutVisionAgent.exe
+          Copy-Item capcut-vision-mcp/agent/config.example.json release/config.json
+          Copy-Item capcut-vision-mcp/agent/config.example.json release/config.example.json
+          @"
+          CapCut Vision MCP Windows Agent
+
+          1. Open config.json in Notepad.
+          2. Set relay_url to the public relay address.
+          3. Set pairing_token to the same long token used by the relay.
+          4. Add or remove folders under allowed_roots.
+          5. Double-click CapCutVisionAgent.exe and press Connect.
+
+          Emergency pause: Ctrl+Shift+F12
+          Closing the visible agent window ends the session.
+          "@ | Set-Content -Encoding UTF8 release/SETUP.txt
+          Get-FileHash release/CapCutVisionAgent.exe -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash)  CapCutVisionAgent.exe" } |
+            Set-Content -Encoding ASCII release/SHA256.txt
+          Compress-Archive -Path release/* -DestinationPath CapCutVisionAgent-Windows.zip -Force
+
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: CapCutVisionAgent-Windows
+          path: CapCutVisionAgent-Windows.zip
+          if-no-files-found: error
+          retention-days: 30
