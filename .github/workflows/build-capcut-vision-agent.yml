@@ -8,6 +8,12 @@ on:
     paths:
       - "capcut-vision-mcp/agent/**"
       - ".github/workflows/build-capcut-vision-agent.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "capcut-vision-mcp/agent/**"
+      - ".github/workflows/build-capcut-vision-agent.yml"
 
 permissions:
   contents: read
