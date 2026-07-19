@@ -1,0 +1,8 @@
+keyboard==0.13.5
+mss==10.0.0
+Pillow==11.3.0
+psutil==7.0.0
+pyautogui==0.9.54
+pyperclip==1.9.0
+pywin32==310
+requests==2.32.4

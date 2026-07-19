@@ -1,0 +1,15 @@
+{
+  "relay_url": "https://YOUR-RELAY.example.com",
+  "agent_id": "bobby-windows-capcut",
+  "pairing_token": "REPLACE_WITH_A_LONG_RANDOM_TOKEN",
+  "poll_seconds": 1.0,
+  "jpeg_quality": 72,
+  "capcut_exe": "",
+  "allowed_roots": [
+    "%USERPROFILE%\\Desktop",
+    "%USERPROFILE%\\Downloads",
+    "%USERPROFILE%\\Documents",
+    "%USERPROFILE%\\Pictures",
+    "%USERPROFILE%\\Videos"
+  ]
+}
